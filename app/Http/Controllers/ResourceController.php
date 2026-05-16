@@ -9,12 +9,13 @@ class ResourceController extends Controller
 {
     public function limitedOperation()
     {
-        $key = 'resource-limit'.request()->ip();
+        $key = 'resource-limit' .request()->ip();
 
         // السماح بـ 3 عمليات فقط بالدقيقة
         if (RateLimiter::tooManyAttempts($key, 3)) {
             return response()->json([
-                'message' => 'Too many operations'
+                'message' => 'Too many operations',
+                'retry_after' => RateLimiter::availableIn($key) 
             ], 429);
         }
 

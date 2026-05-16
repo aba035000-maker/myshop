@@ -58,8 +58,10 @@ class OrderController extends Controller
                 $total += $product->price * $item->quantity;
             }
 
-            // 🔥 الدفع (محاكاة)
-            $user = User::find($userId);
+            // الدفع (محاكاة)
+            $user = User::where('id',$userId)
+            ->lockForUpdate()
+            ->first();
 
             sleep(2); // محاكاة عملية الدفع
 
@@ -93,11 +95,11 @@ class OrderController extends Controller
             // تفريغ السلة
             CartItem::where('cart_id', $cart->id)->delete();
 
+            DB::commit();
+
             // إرسال الفاتورة والإشعار
             dispatch(new SendInvoiceJob($order->id));
             dispatch(new SendNotificationJob($order->id));
-
-            DB::commit();
 
             return response()->json([
                 'message' => 'Order created successfully with payment simulation',
